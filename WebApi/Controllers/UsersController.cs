@@ -409,12 +409,15 @@ namespace WebApi.Controllers
                         return Unauthorized(new { Message = "Cannot delete superadmin" });
                     }
 
-                    // Retrieve and delete related schedule
                     var schedules = await _context.Schedules.Where(s => s.UserId == id).ToListAsync();
                     if (schedules.Any())
                     {
-                            _context.Schedules.RemoveRange(schedules);
-                            await _context.SaveChangesAsync();
+                        foreach (var schedule in schedules)
+                        {
+                            schedule.UserId = null;
+                        }
+                        _context.Schedules.UpdateRange(schedules);
+                        await _context.SaveChangesAsync();
                     }
 
                     _context.Users.Remove(user);
